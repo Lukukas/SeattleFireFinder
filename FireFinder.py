@@ -15,21 +15,22 @@ uri += today
 uri += '"'
 
 #Gather info from Seattle.gov website
-test = http.client.HTTPSConnection('data.seattle.gov')
-test.request("GET", uri)
-newtest = test.getresponse()
+seaData = http.client.HTTPSConnection('data.seattle.gov')
+seaData.request("GET", uri)
+seaDataJson = seaData.getresponse()
 
 #Parse JSON
-jsonTest = json.loads(newtest.read().decode('utf-8')) #is a list of dicts
-print(jsonTest)
+seaList = json.loads(seaDataJson.read().decode('utf-8')) #is a list of dicts
+print(seaList)
 
 #Determine which addresses are close to GG's
-# GG's address: 11301 3rd Ave NE Seattle, WA 98125
-for object in jsonTest:
+gmaps = googlemaps.Client(key=settings.apiKey())
+
+for object in seaList:
     print(object["address"])
 
-gmaps = googlemaps.Client(key=settings.apiKey())
-distance = gmaps.distance_matrix('7100 Jennifer Way Sykesville, MD', '7100 Jennifer Way Sykesville, MD', "driving", "", "", "imperial")
+
+distance = gmaps.distance_matrix(settings.ggAddress(), '13023 Greenwood Av N Seattle, WA', "driving", "", "", "imperial")
 print(distance["rows"][0]["elements"][0]["distance"])
 
 
@@ -44,7 +45,7 @@ Subject: SMTP e-mail test
 
 This is a test e-mail message.
 """ % (settings.sender(), settings.recipient())
-mailServer.sendmail("seafirewatcher@gmail.com", "luke.wiedeman@gmail.com", msg)
+mailServer.sendmail(settings.sender(), settings.recipient(), msg)
 
 print ("Sent mail")
 
