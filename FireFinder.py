@@ -5,13 +5,20 @@ import smtplib
 import googlemaps
 import settings
 
+
+#setup email
+mailServer = smtplib.SMTP('smtp.gmail.com', 587)
+mailServer.ehlo()
+mailServer.starttls()
+mailServer.login(settings.emailLogin(), settings.emailPw())
+
 #Query every day or query every hour?
-today = datetime.datetime.today().strftime('%Y-%m-%d')
+today = datetime.datetime.now()
 print(today)
-today += "T00:00:00.000"
-print(today)
+today = today - datetime.timedelta(hours=12)
+print(today.strftime('%Y-%m-%dT%H:%M:%S.%f'))
 uri = "/resource/grwu-wqtk.json?$query=SELECT%20datetime,%20address,%20type%20WHERE%20datetime%20>%20\""
-uri += today
+uri += today.strftime('%Y-%m-%dT%H:%M:%S.%f')
 uri += '"'
 
 #Gather info from Seattle.gov website
@@ -35,19 +42,27 @@ for object in seaList:
     address += "Seattle, WA"
     distance_matrix = gmaps.distance_matrix(settings.ggAddress(), address, "driving", "", "", "imperial")
     distance = distance_matrix["rows"][0]["elements"][0]["distance"]
+    if 'ft' in distance:
+        testMsg = """From: Seattle FireWatcher <%s>
+        To: Test Recipient <%s>
+        Subject: It's close
+
+        Address: %s
+        Distance: %s
+        Type: %s
+        """ % (settings.send(), settings.recipient(), address, distance, object["type"])
+
+        mailServer.sendmail(settings.sender(), settings.recipient(), testMsg)
     print(distance)
 
 
 #SEND EMAIL if it's within .1 miles of GG's house
-mailServer = smtplib.SMTP('smtp.gmail.com', 587)
-mailServer.ehlo()
-mailServer.starttls()
-mailServer.login(settings.emailLogin(), settings.emailPw())
+
 msg = """From: Seattle FireWatcher <%s>
 To: Test Recipient <%s>
-Subject: SMTP e-mail test
+Subject: I ran today!
 
-This is a test e-mail message.
+I ran today dude!
 """ % (settings.sender(), settings.recipient())
 mailServer.sendmail(settings.sender(), settings.recipient(), msg)
 
