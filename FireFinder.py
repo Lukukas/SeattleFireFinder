@@ -16,7 +16,8 @@ uri += '"'
 
 #Gather info from Seattle.gov website
 seaData = http.client.HTTPSConnection('data.seattle.gov')
-seaData.request("GET", uri)
+header = {"X-App-Token":"xD7zm0umu9QcSt9uH72IidCNx"}
+seaData.request("GET", uri, "", header)
 seaDataJson = seaData.getresponse()
 
 #Parse JSON
@@ -28,13 +29,16 @@ gmaps = googlemaps.Client(key=settings.apiKey())
 
 for object in seaList:
     print(object["address"])
+    address = object["address"]
+    if "/" in address:
+        address = address[0:address.index("/")]
+    address += "Seattle, WA"
+    distance_matrix = gmaps.distance_matrix(settings.ggAddress(), address, "driving", "", "", "imperial")
+    distance = distance_matrix["rows"][0]["elements"][0]["distance"]
+    print(distance)
 
 
-distance = gmaps.distance_matrix(settings.ggAddress(), '13023 Greenwood Av N Seattle, WA', "driving", "", "", "imperial")
-print(distance["rows"][0]["elements"][0]["distance"])
-
-
-#SEND EMAIL if it's within .5 miles of GG's house
+#SEND EMAIL if it's within .1 miles of GG's house
 mailServer = smtplib.SMTP('smtp.gmail.com', 587)
 mailServer.ehlo()
 mailServer.starttls()
