@@ -16,9 +16,9 @@ mailServer.login(settings.emailLogin(), settings.emailPw())
 #Query every day or query every hour?
 today = datetime.datetime.now()
 print(today)
-today = today - datetime.timedelta(hours=12)
+today = today - datetime.timedelta(hours=13)
 print(today.strftime('%Y-%m-%dT%H:%M:%S.%f'))
-uri = "/resource/grwu-wqtk.json?$query=SELECT%20datetime,%20address,%20type%20WHERE%20datetime%20>%20\""
+uri = "/resource/grwu-wqtk.json?$query=SELECT%20datetime,%20address,%20type,%20incident_number%20WHERE%20datetime%20>%20\""
 uri += today.strftime('%Y-%m-%dT%H:%M:%S.%f')
 uri += '"'
 
@@ -36,7 +36,11 @@ print(seaList)
 gmaps = googlemaps.Client(key=settings.apiKey())
 
 for object in seaList:
-    print(object["address"])
+    noEmailSent = True
+    storage = open('localStor.txt', 'a')
+    storage.write(object["incident_number"])
+    storage.write("\n")
+    storage.close()
     address = object["address"]
     if "/" in address:
         address = address[0:address.index("/")]
@@ -52,9 +56,18 @@ for object in seaList:
         Distance: %s
         Type: %s
         """ % (settings.send(), settings.recipient(), address, distance, object["type"])
-
-        mailServer.sendmail(settings.sender(), settings.recipient(), testMsg)
-    print(distance)
+        #Make sure we haven't sent this email already
+        readStor = open('localStor.txt')
+        for line in readStor:
+            if line == object["incident_number"]:
+                noEmailSent = False
+        readStor.close()
+        if noEmailSent:
+            mailServer.sendmail(settings.sender(), settings.recipient(), testMsg)
+            storage = open('localStor.txt', 'a')
+            storage.write(object["incident_number"])
+            storage.write('\n')
+            storage.close()
 
 
 #SEND EMAIL if it's within .1 miles of GG's house
