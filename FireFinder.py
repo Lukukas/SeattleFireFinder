@@ -31,23 +31,19 @@ seaDataJson = seaData.getresponse()
 #Parse JSON
 seaList = json.loads(seaDataJson.read().decode('utf-8')) #is a list of dicts
 print(seaList)
-
 #Determine which addresses are close to GG's
 gmaps = googlemaps.Client(key=settings.apiKey())
 
 for object in seaList:
     noEmailSent = True
-    storage = open('localStor.txt', 'a')
-    storage.write(object["incident_number"])
-    storage.write("\n")
-    storage.close()
     address = object["address"]
     if "/" in address:
         address = address[0:address.index("/")]
-    address += "Seattle, WA"
+    address += " Seattle, WA"
     distance_matrix = gmaps.distance_matrix(settings.ggAddress(), address, "driving", "", "", "imperial")
     distance = distance_matrix["rows"][0]["elements"][0]["distance"]
-    if 'ft' in distance:
+    print(object["address"])
+    if 'ft' in distance["text"]:
         testMsg = """From: Seattle FireWatcher <%s>
         To: Test Recipient <%s>
         Subject: It's close
@@ -55,11 +51,11 @@ for object in seaList:
         Address: %s
         Distance: %s
         Type: %s
-        """ % (settings.send(), settings.recipient(), address, distance, object["type"])
+        """ % (settings.sender(), settings.recipient(), address, distance["text"], object["type"])
         #Make sure we haven't sent this email already
         readStor = open('localStor.txt')
         for line in readStor:
-            if line == object["incident_number"]:
+            if line[0:line.index("\n")] == object["incident_number"]:
                 noEmailSent = False
         readStor.close()
         if noEmailSent:
