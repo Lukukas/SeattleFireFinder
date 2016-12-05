@@ -5,18 +5,22 @@ import json.decoder
 import smtplib
 import googlemaps
 import settings
+import logging
 
 
 #setup email
 mailServer = smtplib.SMTP('smtp.gmail.com', 587)
 mailServer.ehlo()
 mailServer.starttls()
-mailServer.login(settings.emailLogin(), settings.emailPw())
+try:
+    mailServer.login(settings.emailLogin(), settings.emailPw())
+except Exception:
+    logging.exception("Email Login")
 
 #Query every day or query every hour?
 today = datetime.datetime.now()
 print(today)
-today = today - datetime.timedelta(hours=13)
+today = today - datetime.timedelta(hours=12)
 print(today.strftime('%Y-%m-%dT%H:%M:%S.%f'))
 uri = "/resource/grwu-wqtk.json?$query=SELECT%20datetime,%20address,%20type,%20incident_number%20WHERE%20datetime%20>%20\""
 uri += today.strftime('%Y-%m-%dT%H:%M:%S.%f')
@@ -40,7 +44,10 @@ for object in seaList:
     if "/" in address:
         address = address[0:address.index("/")]
     address += " Seattle, WA"
-    distance_matrix = gmaps.distance_matrix(settings.ggAddress(), address, "driving", "", "", "imperial")
+    try:
+        distance_matrix = gmaps.distance_matrix(settings.ggAddress(), address, "driving", "", "", "imperial")
+    except Exception:
+        logging.exception("Distance Matrix call")
     distance = distance_matrix["rows"][0]["elements"][0]["distance"]
     print(object["address"])
     if 'ft' in distance["text"]:
@@ -53,30 +60,35 @@ for object in seaList:
         Type: %s
         """ % (settings.sender(), settings.recipient(), address, distance["text"], object["type"])
         #Make sure we haven't sent this email already
-        readStor = open('localStor.txt')
+        try:
+            readStor = open('localStor.txt')
+        except Exception:
+            logging.exception("Open File read only")
         for line in readStor:
             if line[0:line.index("\n")] == object["incident_number"]:
                 noEmailSent = False
         readStor.close()
         if noEmailSent:
             mailServer.sendmail(settings.sender(), settings.recipient(), testMsg)
-            storage = open('localStor.txt', 'a')
+            try:
+                storage = open('localStor.txt', 'a')
+            except Exception:
+                logging.exception("Open File in append mode")
             storage.write(object["incident_number"])
             storage.write('\n')
             storage.close()
 
-
-#SEND EMAIL if it's within .1 miles of GG's house
-
+#Message to confirm program is running
 msg = """From: Seattle FireWatcher <%s>
 To: Test Recipient <%s>
 Subject: I ran today!
 
 I ran today dude!
 """ % (settings.sender(), settings.recipient())
-mailServer.sendmail(settings.sender(), settings.recipient(), msg)
+if datetime.datetime.now().time() >= datetime.time(9,0,0) and datetime.datetime.now().time() < datetime.time(9,59,0):
+    mailServer.sendmail(settings.sender(), settings.recipient(), msg)
+    print("Sent mail")
 
-print ("Sent mail")
 
 
 
