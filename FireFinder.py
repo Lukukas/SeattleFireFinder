@@ -19,9 +19,7 @@ except Exception:
 
 #Query every day or query every hour?
 today = datetime.datetime.now()
-print(today)
 today = today - datetime.timedelta(hours=12)
-print(today.strftime('%Y-%m-%dT%H:%M:%S.%f'))
 uri = "/resource/grwu-wqtk.json?$query=SELECT%20datetime,%20address,%20type,%20incident_number%20WHERE%20datetime%20>%20\""
 uri += today.strftime('%Y-%m-%dT%H:%M:%S.%f')
 uri += '"'
@@ -29,12 +27,14 @@ uri += '"'
 #Gather info from Seattle.gov website
 seaData = http.client.HTTPSConnection('data.seattle.gov')
 header = {"X-App-Token":"xD7zm0umu9QcSt9uH72IidCNx"}
-seaData.request("GET", uri, "", header)
+try:
+    seaData.request("GET", uri, "", header)
+except Exception:
+    logging.exception("Get Request to Seattle.gov")
 seaDataJson = seaData.getresponse()
 
 #Parse JSON
 seaList = json.loads(seaDataJson.read().decode('utf-8')) #is a list of dicts
-print(seaList)
 #Determine which addresses are close to GG's
 gmaps = googlemaps.Client(key=settings.apiKey())
 
@@ -48,8 +48,8 @@ for object in seaList:
         distance_matrix = gmaps.distance_matrix(settings.ggAddress(), address, "driving", "", "", "imperial")
     except Exception:
         logging.exception("Distance Matrix call")
+        print(object)
     distance = distance_matrix["rows"][0]["elements"][0]["distance"]
-    print(object["address"])
     if 'ft' in distance["text"]:
         testMsg = """From: Seattle FireWatcher <%s>
         To: Test Recipient <%s>
