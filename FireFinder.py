@@ -69,7 +69,10 @@ for object in seaList:
                 noEmailSent = False
         readStor.close()
         if noEmailSent:
-            mailServer.sendmail(settings.sender(), settings.recipient(), testMsg)
+            try:
+                mailServer.sendmail(settings.sender(), settings.recipient(), testMsg)
+            except:
+                logging.exception("Send Email")
             try:
                 storage = open('localStor.txt', 'a')
             except Exception:
@@ -77,7 +80,6 @@ for object in seaList:
             storage.write(object["incident_number"])
             storage.write('\n')
             storage.close()
-
 #Message to confirm program is running
 msg = """From: Seattle FireWatcher <%s>
 To: Test Recipient <%s>
@@ -86,12 +88,8 @@ Subject: I ran today!
 I ran today dude!
 """ % (settings.sender(), settings.recipient())
 if datetime.datetime.now().time() >= datetime.time(9,0,0) and datetime.datetime.now().time() < datetime.time(9,59,0):
-    mailServer.sendmail(settings.sender(), settings.recipient(), msg)
+    try:
+        mailServer.sendmail(settings.sender(), settings.recipient(), msg)
+    except Exception:
+        logging.exception("Send Daily Email")
     print("Sent mail")
-
-
-
-
-#OLD OLD OLD
-#bodyVal = '{"id":"kzjm-xkqj","name":"Seattle Real Time Fire 911 Calls","attribution":"City of Seattle Fire Department MIS","attributionLink":"http://web5.seattle.gov/MNM/incidentresponse.aspx","category":"Public Safety","description":"Provides Seattle Fire Department 911 dispatches. Updated every 5 minutes.","displayType":"table","licenseId":"CC0_10","publicationAppendEnabled":true,"resourceName":"fire-911","columns":[{"id":3479077,"name":"Address","fieldName":"address","position":1,"description":"Location of Incident","width":227,"dataTypeName":"text","tableColumnId":1290345,"format":{},"flags":null,"metadata":{}},{"id":3479078,"name":"Type","fieldName":"type","position":3,"description":"Response Type","width":198,"dataTypeName":"text","tableColumnId":1290346,"format":{},"flags":null,"metadata":{}},{"id":3479079,"name":"Datetime","fieldName":"datetime","position":4,"description":"The date and time of the call.","width":222,"dataTypeName":"date","tableColumnId":1411673,"format":{"align":"left"},"flags":null,"metadata":{}},{"id":3479080,"name":"Latitude","fieldName":"latitude","position":5,"description":"This is the latitude value. Lines of latitude are parallel to the equator.","width":100,"dataTypeName":"number","tableColumnId":1290349,"format":{"precisionStyle":"standard"},"flags":null,"metadata":{}},{"id":3479081,"name":"Longitude","fieldName":"longitude","position":6,"description":"This is the longitude value. Lines of longitude run perpendicular to lines of latitude, and all pass through both poles.","width":100,"dataTypeName":"number","tableColumnId":1290350,"format":{"precisionStyle":"standard"},"flags":null,"metadata":{}},{"id":3479082,"name":"Report Location","fieldName":"report_location","position":7,"width":100,"dataTypeName":"location","tableColumnId":1393474,"format":{},"flags":null,"metadata":{}},{"id":3479083,"name":"Incident Number","fieldName":"incident_number","position":8,"width":100,"dataTypeName":"text","tableColumnId":1419260,"format":{"precisionStyle":"standard","align":"right"},"flags":null,"metadata":{}}],"metadata":{"custom_fields":{"Refresh Frequency":{"Frequency":"5 minutes"},"Data Owner":{"Owner":"Seattle Fire Department"}},"renderTypeConfig":{"visible":{"table":true}},"availableDisplayTypes":["table","fatrow","page"],"thumbnail":{"page":{"created":true}},"rdfSubject":"0","rowIdentifier":"0","rdfClass":"","jsonQuery":{"order":[{"columnFieldName":"datetime","ascending":false}]}},"query":{"orderBys":[{"ascending":false,"expression":{"columnId":3479079,"type":"column"}}]},"tags":["seattle","911","fire","dispatch e911","sfd mobile"],"flags":["default","restorable","restorePossibleForType"],"originalViewId":"kzjm-xkqj","displayFormat":{}}'
-#test.request("POST", "/views/INLINE/rows.json?accessType=WEBSITE&method=getByIds&asHashes=true&start=0&length=50&meta=true", bodyVal)
