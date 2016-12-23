@@ -53,14 +53,14 @@ for object in seaList:
     if 'ft' in distance["text"]:
         testMsg = """From: Seattle FireWatcher <%s>
         To: Test Recipient <%s>
-        Subject: 911 call close to 11301 3rd Ave NE
+        Subject: 911 call close to <%s>
 
     A 911 call was placed from %s.
-    This is about %s from 11301 3rd Ave NE.
+    This is about %s from <%s>.
     Call Type: %s.
 
     For more info: http://www2.seattle.gov/fire/realtime911/getDatePubTab.asp
-        """ % (settings.sender(), settings.donRecipient(), address, distance["text"], object["type"])
+        """ % (settings.sender(), settings.donRecipient(), settings.ggAddress(), address, distance["text"], settings.ggAddress(), object["type"])
         #Make sure we haven't sent this email already
         try:
             readStor = open('localStor.txt')
