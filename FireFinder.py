@@ -53,10 +53,10 @@ for object in seaList:
     if 'ft' in distance["text"]:
         testMsg = """From: Seattle FireWatcher <%s>
         To: Test Recipient <%s>
-        Subject: 911 call close to <%s>
+        Subject: 911 call close to %s
 
     A 911 call was placed from %s.
-    This is about %s from <%s>.
+    This is about %s from %s.
     Call Type: %s.
 
     For more info: http://www2.seattle.gov/fire/realtime911/getDatePubTab.asp
