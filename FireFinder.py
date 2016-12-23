@@ -53,12 +53,14 @@ for object in seaList:
     if 'ft' in distance["text"]:
         testMsg = """From: Seattle FireWatcher <%s>
         To: Test Recipient <%s>
-        Subject: It's close
+        Subject: 911 call close to 11301 3rd Ave NE
 
-        Address: %s
-        Distance: %s
-        Type: %s
-        """ % (settings.sender(), settings.recipient(), address, distance["text"], object["type"])
+    A 911 call was placed from %s.
+    This is about %s from 11301 3rd Ave NE.
+    Call Type: %s.
+
+    For more info: http://www2.seattle.gov/fire/realtime911/getDatePubTab.asp
+        """ % (settings.sender(), settings.donRecipient(), address, distance["text"], object["type"])
         #Make sure we haven't sent this email already
         try:
             readStor = open('localStor.txt')
@@ -70,7 +72,7 @@ for object in seaList:
         readStor.close()
         if noEmailSent:
             try:
-                mailServer.sendmail(settings.sender(), settings.recipient(), testMsg)
+                mailServer.sendmail(settings.sender(), settings.donRecipient(), testMsg)
             except:
                 logging.exception("Send Email")
             try:
